@@ -1,0 +1,8 @@
+version: '3'
+services:
+  pyoff:
+    build: .
+    environment:
+      PYOFF_URL: "https://google.com"
+      PYOFF_DEPTH: 1
+      PYOFF_DESTINATION: "./"
