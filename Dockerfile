@@ -1,0 +1,5 @@
+FROM python:3-alpine
+
+WORKDIR /usr/src/app
+
+CMD echo PYOFF_URL=$PYOFF_URL PYOFF_DEPTH=$PYOFF_DEPTH PYOFF_DESTINATION=$PYOFF_DESTINATION Running `python --version`
