@@ -1,7 +1,7 @@
-from os import environ
+from os import environ, makedirs
 from sys import version_info
 from urllib.parse import urlparse
-from pathlib import Path
+from pathlib import Path, PurePath
 import re
 from bs4 import BeautifulSoup
 import requests
@@ -27,14 +27,26 @@ own_src_resources = document.find_all(src=re.compile(f'^{site_root}'))
 print(f'Found {len(own_href_resources)} href resources tags.')
 print(f'Found {len(own_src_resources)} src resources tags.')
 
+resources = [(path, str(document))]
+
 for resource in own_href_resources:
-  resource["href"] = resource["href"].replace(site_root, "")
+  url = resource["href"]
+  local_url = resource["href"].replace(site_root, "")
+  resource["href"] = local_url
+  resources.append((local_url, requests.get(url).text))
 
 for resource in own_src_resources:
-  resource["src"] = resource["src"].replace(site_root, "")
+  url = resource["src"]
+  local_url = resource["src"].replace(site_root, "")
+  resource["src"] = local_url
+  resources.append((local_url, requests.get(url).text))
 
 write_path = Path(f'{environ["PYOFF_DESTINATION"]}/')
-filename = write_path / path
-print(f'Writing file to {filename}.')
-with open(filename, 'w', encoding=response.encoding) as file:
-  file.write(str(document))
+
+print(f'Downloading {len(resources)} resources.')
+for (resource, body) in resources:
+  filename = PurePath(write_path / resource)
+  print(f'Writing file to {filename}.')
+  makedirs(filename.parent, exist_ok=True)
+  with open(filename, 'w', encoding=response.encoding) as file:
+    file.write(body)
