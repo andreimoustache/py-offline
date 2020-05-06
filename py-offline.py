@@ -5,6 +5,7 @@ from pathlib import Path, PurePath
 import re
 from bs4 import BeautifulSoup
 import requests
+from pyoffline_writer import write_to_file
 
 
 def process_resource(tag, attribute, site_root):
@@ -24,13 +25,6 @@ def detect_resources(document, resources, site_root):
   print(f'Found {len(own_src_resources)} src resources tags.')
   resources += [process_resource(resource, "src", site_root) for resource in own_src_resources]
 
-
-def write_to_file(path, name, body, encoding):
-  filename = PurePath(path / name)
-  print(f'Writing file to {filename}.')
-  makedirs(filename.parent, exist_ok=True)
-  with open(filename, 'w', encoding=encoding) as file:
-    file.write(body)
 
 def process_document(site_root, path, resources):
   print(f'Requesting {site_root + path}.')
