@@ -71,7 +71,7 @@ PYOFF_DESTINATION={write_destination}
   site_root = f'{scheme}://{domain}/'
   print(f'Domain set to {domain}.')
 
-  write_path = Path(f'{write_destination}/')
+  write_path = Path(f'./{write_destination}/')
   print(f'Write path set to {write_path}.')
 
   process_site(site_root, first_path, write_path)
