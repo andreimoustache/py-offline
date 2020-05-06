@@ -1,5 +1,4 @@
 import re
-import requests
 from bs4 import BeautifulSoup
 
 
@@ -7,8 +6,7 @@ def process_resource(tag, attribute, site_root):
   url = tag[attribute]
   local_url = tag[attribute].replace(site_root, "")
   tag[attribute] = local_url
-  resource = requests.get(url)
-  return (local_url, resource.text, resource.encoding)
+  return (local_url, url)
 
 
 def detect_resources(document, resources, site_root):
