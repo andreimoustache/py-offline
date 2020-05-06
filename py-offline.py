@@ -1,5 +1,5 @@
 from os import environ, makedirs
-from sys import version_info
+from sys import version_info, exit
 from urllib.parse import urlparse
 from pathlib import Path, PurePath
 import re
@@ -42,6 +42,15 @@ def process_document(site_root, path, resources):
   detect_resources(document, resources, site_root)
 
 
+def process_site(site_root, first_path, write_path):
+  documents = [first_path]
+  resources = []
+
+  [process_document(site_root, path, resources) for path in documents]
+
+  [write_to_file(write_path, name, body, encoding) for (name, body, encoding) in resources]
+
+
 def main():
   site_url = environ.get("PYOFF_URL", None)
   depth = environ.get("PYOFF_DEPTH", 1)
@@ -65,7 +74,7 @@ PYOFF_DESTINATION={write_destination}
   write_path = Path(f'{write_destination}/')
   print(f'Write path set to {write_path}.')
 
-  [write_to_file(write_path, name, body, encoding) for (name, body, encoding) in resources]
+  process_site(site_root, first_path, write_path)
 
 
 if __name__ == "__main__":
