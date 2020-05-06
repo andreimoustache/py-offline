@@ -11,7 +11,8 @@ def process_resource(tag, attribute, site_root):
   url = tag[attribute]
   local_url = tag[attribute].replace(site_root, "")
   tag[attribute] = local_url
-  return (local_url, requests.get(url).text)
+  resource = requests.get(url)
+  return (local_url, resource.text, resource.encoding)
 
 
 def detect_resources(document, resources, site_root):
@@ -31,6 +32,15 @@ def write_to_file(path, name, body, encoding):
   with open(filename, 'w', encoding=encoding) as file:
     file.write(body)
 
+def process_document(site_root, path, resources):
+  print(f'Requesting {site_root + path}.')
+  response = requests.get(site_root + path)
+  print(f'Got HTTP {response.status_code}, {response.headers["Content-Type"]}.')
+
+  document = BeautifulSoup(response.text, "html.parser")
+  resources += [(path, str(document), response.encoding)]
+  detect_resources(document, resources, site_root)
+
 
 def main():
   print(f'''
@@ -45,19 +55,14 @@ Running {version_info}
   site_root = f'{scheme}://{domain}/'
   print(f'Domain set to {domain}.')
 
-  print(f'Requesting {path}.')
-  response = requests.get(environ["PYOFF_URL"])
-  print(f'Got HTTP {response.status_code}, {response.headers["Content-Type"]}.')
-
-  document = BeautifulSoup(response.text, "html.parser")
-  resources = [(path, str(document))]
-  detect_resources(document, resources, site_root)
+  documents = [path]
+  resources = []
+  [process_document(site_root, path, resources) for path in documents]
 
   write_path = Path(f'{environ["PYOFF_DESTINATION"]}/')
-  print(f'Writing files to {write_path}.')
+  print(f'Write path set to {write_path}.')
 
-  print(f'Downloading {len(resources)} resources.')
-  [write_to_file(write_path, name, body, response.encoding) for (name, body) in resources]
+  [write_to_file(write_path, name, body, encoding) for (name, body, encoding) in resources]
 
 
 if __name__ == "__main__":
