@@ -8,14 +8,15 @@ from pyoffline_downloader import download_document, download_resource
 
 
 def process_site(site_root, first_path, write_path):
-  documents = [first_path]
+  documents = [(first_path, site_root+first_path)]
   resources = []
 
-  downloaded_documents = [download_document(site_root, path) for path in documents]
+  downloaded_documents = [download_document(url, name) for (name, url) in documents]
   [process_document(site_root, path, body, encoding, resources) for (path, body, encoding) in downloaded_documents]
 
-  downloaded_resources = [download_resource(name, url) for (name, url) in resources]
+  downloaded_resources = [download_resource(url, name) for (name, url) in resources]
   [write_to_file(write_path, name, body, encoding) for (name, body, encoding) in downloaded_resources]
+  [write_to_file(write_path, name, body, encoding) for (name, body, encoding) in downloaded_documents]
 
 
 def main():

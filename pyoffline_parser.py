@@ -21,5 +21,4 @@ def detect_resources(document, resources, site_root):
 
 def process_document(site_root, path, body, encoding, resources):
   document = BeautifulSoup(body, "html.parser")
-  resources += [(path, str(document), encoding)]
   detect_resources(document, resources, site_root)
