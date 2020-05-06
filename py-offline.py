@@ -43,23 +43,26 @@ def process_document(site_root, path, resources):
 
 
 def main():
+  site_url = environ.get("PYOFF_URL", None)
+  depth = environ.get("PYOFF_DEPTH", 1)
+  write_destination = environ.get("PYOFF_DESTINATION", ".")
+
   print(f'''
-PYOFF_URL={environ["PYOFF_URL"]}
-PYOFF_DEPTH={environ["PYOFF_DEPTH"]}
-PYOFF_DESTINATION={environ["PYOFF_DESTINATION"]}
-Running {version_info}
+PYOFF_URL={site_url}
+PYOFF_DEPTH={depth}
+PYOFF_DESTINATION={write_destination}
   ''')
 
-  scheme, domain, path, _, _, _ = urlparse(environ["PYOFF_URL"])
-  path = "index.html" if path == "/" else path
+  if site_url is None:
+    print("I need a URL, please set the PYOFF_URL environment variable.")
+    return exit(1)
+
+  scheme, domain, path, _, _, _ = urlparse(site_url)
+  first_path = "index.html" if path in ["/", ""] else path
   site_root = f'{scheme}://{domain}/'
   print(f'Domain set to {domain}.')
 
-  documents = [path]
-  resources = []
-  [process_document(site_root, path, resources) for path in documents]
-
-  write_path = Path(f'{environ["PYOFF_DESTINATION"]}/')
+  write_path = Path(f'{write_destination}/')
   print(f'Write path set to {write_path}.')
 
   [write_to_file(write_path, name, body, encoding) for (name, body, encoding) in resources]
