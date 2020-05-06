@@ -4,13 +4,15 @@ from urllib.parse import urlparse
 from pathlib import Path, PurePath
 from pyoffline_writer import write_to_file
 from pyoffline_parser import detect_resources, process_document
+from pyoffline_downloader import download_document
 
 
 def process_site(site_root, first_path, write_path):
   documents = [first_path]
   resources = []
 
-  [process_document(site_root, path, resources) for path in documents]
+  downloaded_documents = [download_document(site_root, path) for path in documents]
+  [process_document(site_root, path, body, encoding, resources) for (path, body, encoding) in downloaded_documents]
 
   [write_to_file(write_path, name, body, encoding) for (name, body, encoding) in resources]
 

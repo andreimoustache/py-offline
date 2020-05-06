@@ -21,11 +21,7 @@ def detect_resources(document, resources, site_root):
   resources += [process_resource(resource, "src", site_root) for resource in own_src_resources]
 
 
-def process_document(site_root, path, resources):
-  print(f'Requesting {site_root + path}.')
-  response = requests.get(site_root + path)
-  print(f'Got HTTP {response.status_code}, {response.headers["Content-Type"]}.')
-
-  document = BeautifulSoup(response.text, "html.parser")
-  resources += [(path, str(document), response.encoding)]
+def process_document(site_root, path, body, encoding, resources):
+  document = BeautifulSoup(body, "html.parser")
+  resources += [(path, str(document), encoding)]
   detect_resources(document, resources, site_root)
