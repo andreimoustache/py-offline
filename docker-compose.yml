@@ -5,4 +5,4 @@ services:
     environment:
       PYOFF_URL: "https://google.com"
       PYOFF_DEPTH: 1
-      PYOFF_DESTINATION: "./"
+      PYOFF_DESTINATION: "site/"
