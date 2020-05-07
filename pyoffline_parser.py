@@ -1,12 +1,14 @@
 import re
 from bs4 import BeautifulSoup
+from pyoffline_models import Resource
 
 
 def process_resource(tag, attribute, site_root):
   url = tag[attribute]
-  local_url = tag[attribute].replace(site_root, "")
-  tag[attribute] = local_url
-  return (local_url, url)
+  relative_url = tag[attribute].replace(site_root, "")
+  tag[attribute] = relative_url
+
+  return Resource(url, name=relative_url)
 
 
 def detect_resources(document, resources, site_root):

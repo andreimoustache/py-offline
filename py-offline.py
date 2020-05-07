@@ -15,7 +15,7 @@ def process_site(site_root, first_path, write_path):
   [process_document(site_root, path, body, encoding, resources) for (path, body, encoding) in downloaded_documents]
 
   downloaded_resources = [download_resource(url, name) for (name, url) in resources]
-  [write_to_file(write_path, name, body, encoding) for (name, body, encoding) in downloaded_resources]
+  [write_to_file(write_path, resource) for resource in downloaded_resources]
   [write_to_file(write_path, name, body, encoding) for (name, body, encoding) in downloaded_documents]
 
 
