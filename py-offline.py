@@ -2,53 +2,21 @@ from os import environ, makedirs
 from sys import version_info, exit
 from urllib.parse import urlparse
 from pathlib import Path, PurePath
-import re
-from bs4 import BeautifulSoup
-import requests
-
-
-def process_resource(tag, attribute, site_root):
-  url = tag[attribute]
-  local_url = tag[attribute].replace(site_root, "")
-  tag[attribute] = local_url
-  resource = requests.get(url)
-  return (local_url, resource.text, resource.encoding)
-
-
-def detect_resources(document, resources, site_root):
-  own_src_resources = document.find_all(href=re.compile(f'^{site_root}'))
-  print(f'Found {len(own_src_resources)} href resources tags.')
-  resources += [process_resource(resource, "href", site_root) for resource in own_src_resources]
-
-  own_src_resources = document.find_all(src=re.compile(f'^{site_root}'))
-  print(f'Found {len(own_src_resources)} src resources tags.')
-  resources += [process_resource(resource, "src", site_root) for resource in own_src_resources]
-
-
-def write_to_file(path, name, body, encoding):
-  filename = PurePath(path / name)
-  print(f'Writing file to {filename}.')
-  makedirs(filename.parent, exist_ok=True)
-  with open(filename, 'w', encoding=encoding) as file:
-    file.write(body)
-
-def process_document(site_root, path, resources):
-  print(f'Requesting {site_root + path}.')
-  response = requests.get(site_root + path)
-  print(f'Got HTTP {response.status_code}, {response.headers["Content-Type"]}.')
-
-  document = BeautifulSoup(response.text, "html.parser")
-  resources += [(path, str(document), response.encoding)]
-  detect_resources(document, resources, site_root)
+from pyoffline_writer import write_to_file
+from pyoffline_parser import detect_resources, process_document
+from pyoffline_downloader import download_document, download_resource
 
 
 def process_site(site_root, first_path, write_path):
-  documents = [first_path]
+  documents = [(first_path, site_root+first_path)]
   resources = []
 
-  [process_document(site_root, path, resources) for path in documents]
+  downloaded_documents = [download_document(url, name) for (name, url) in documents]
+  [process_document(site_root, path, body, encoding, resources) for (path, body, encoding) in downloaded_documents]
 
-  [write_to_file(write_path, name, body, encoding) for (name, body, encoding) in resources]
+  downloaded_resources = [download_resource(url, name) for (name, url) in resources]
+  [write_to_file(write_path, name, body, encoding) for (name, body, encoding) in downloaded_resources]
+  [write_to_file(write_path, name, body, encoding) for (name, body, encoding) in downloaded_documents]
 
 
 def main():
