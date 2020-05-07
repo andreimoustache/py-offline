@@ -12,11 +12,3 @@ def download_resource(resource: Resource):
   resource.body = response.text
 
   return resource
-
-
-def download_document(url, name):
-  print(f'Requesting {url}.')
-  response = requests.get(url)
-  print(f'Got HTTP {response.status_code}, {response.headers["Content-Type"]}.')
-
-  return (name, response.text, response.encoding)
