@@ -4,19 +4,22 @@ from urllib.parse import urlparse
 from pathlib import Path, PurePath
 from pyoffline_writer import write_to_file
 from pyoffline_parser import detect_resources, process_document
-from pyoffline_downloader import download_document, download_resource
+from pyoffline_downloader import download_resource
+from pyoffline_models import Document
 
 
 def process_site(site_root, first_path, write_path):
-  documents = [(first_path, site_root+first_path)]
+  first_document = Document(site_root+first_path, name=first_path, depth=0)
+
+  documents = [first_document]
   resources = []
 
-  downloaded_documents = [download_document(url, name) for (name, url) in documents]
-  [process_document(site_root, path, body, encoding, resources) for (path, body, encoding) in downloaded_documents]
+  downloaded_documents = [download_resource(document) for document in documents]
+  [process_document(site_root, document, resources) for document in downloaded_documents]
 
-  downloaded_resources = [download_resource(url, name) for (name, url) in resources]
-  [write_to_file(write_path, name, body, encoding) for (name, body, encoding) in downloaded_resources]
-  [write_to_file(write_path, name, body, encoding) for (name, body, encoding) in downloaded_documents]
+  downloaded_resources = [download_resource(resource) for resource in resources]
+  [write_to_file(write_path, resource) for resource in downloaded_resources]
+  [write_to_file(write_path, document) for document in downloaded_documents]
 
 
 def main():
