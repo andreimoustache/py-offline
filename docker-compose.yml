@@ -2,7 +2,20 @@ version: '3'
 services:
   pyoff:
     build: .
+    depends_on:
+      - q
+    restart: on-failure
     environment:
       PYOFF_URL: "https://google.com"
       PYOFF_DEPTH: 1
       PYOFF_DESTINATION: "site/"
+  q:
+    image: rabbitmq:3.8-alpine
+    ports:
+      - "15672:15672"
+      - "5672:5672"
+    healthcheck:
+      test: [ "CMD", "nc", "-z", "localhost", "5672" ]
+      interval: 5s
+      timeout: 15s
+      retries: 1
