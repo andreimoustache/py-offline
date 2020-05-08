@@ -1,5 +1,17 @@
 version: '3'
 services:
+  pyoff_main:
+    build: .
+    entrypoint: ["python", "./py-offline.py"]
+    depends_on:
+      - q
+    restart: on-failure
+    environment:
+      PYOFF_URL: "https://google.com"
+      PYOFF_DEPTH: 1
+      PYOFF_DESTINATION: "site/"
+      PYOFF_Q_HOST: "q"
+      PYOFF_Q_FILES: "files"
   writer:
     build: .
     entrypoint: ["python", "./pyoffline_writer.py"]
@@ -8,6 +20,8 @@ services:
     restart: on-failure
     environment:
       PYOFF_DESTINATION: "site/"
+      PYOFF_Q_HOST: "q"
+      PYOFF_Q_FILES: "files"
   q:
     image: rabbitmq:3.8-alpine
     ports:

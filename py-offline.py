@@ -2,13 +2,14 @@ from os import environ, makedirs
 from sys import version_info, exit
 from urllib.parse import urlparse
 from pathlib import Path, PurePath
-from pyoffline_writer import write_to_file
+from pickle import dumps
 from pyoffline_parser import detect_resources, process_document
 from pyoffline_downloader import download_resource
 from pyoffline_models import Document
+from q_publisher import Publisher
 
 
-def process_site(site_root, first_path, write_path):
+def process_site(site_root, first_path, publisher: Publisher):
   first_document = Document(site_root+first_path, name=first_path, depth=0)
 
   documents = [first_document]
@@ -18,8 +19,9 @@ def process_site(site_root, first_path, write_path):
   [process_document(site_root, document, resources) for document in downloaded_documents]
 
   downloaded_resources = [download_resource(resource) for resource in resources]
-  [write_to_file(write_path, resource) for resource in downloaded_resources]
-  [write_to_file(write_path, document) for document in downloaded_documents]
+  
+  [publisher.publish("files", dumps(document)) for document in downloaded_documents]
+  [publisher.publish("files", dumps(resource)) for resource in downloaded_resources]
 
 
 def main():
@@ -45,7 +47,11 @@ PYOFF_DESTINATION={write_destination}
   write_path = Path(f'./{write_destination}/')
   print(f'Write path set to {write_path}.')
 
-  process_site(site_root, first_path, write_path)
+  q_host = environ.get("PYOFF_Q_HOST", "q")
+  files_queue_name = environ.get("PYOFF_Q_FILES", "files")
+  files_publisher = Publisher(q_host, files_queue_name)
+
+  process_site(site_root, first_path, files_publisher)
 
 
 if __name__ == "__main__":
