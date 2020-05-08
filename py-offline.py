@@ -49,8 +49,14 @@ PYOFF_DESTINATION={write_destination}
 
   q_host = environ.get("PYOFF_Q_HOST", "q")
   files_queue_name = environ.get("PYOFF_Q_FILES", "files")
-  files_publisher = Publisher(q_host, files_queue_name)
+  try:
+    files_publisher = Publisher(q_host, files_queue_name)
+    print('Successfully created publisher.')
+  except:
+    print('Failed to create publisher.')
+    exit(1)
 
+  print('Processing site.')
   process_site(site_root, first_path, files_publisher)
 
 

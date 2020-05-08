@@ -1,5 +1,6 @@
 from pathlib import PurePath
 from os import environ, makedirs
+from sys import exit
 from pyoffline_models import Resource
 from q_consumer import Consumer
 import pickle
@@ -36,7 +37,12 @@ if __name__ == "__main__":
   queue_host = environ.get("PYOFF_Q_HOST", "q")
   queue_name = environ.get("PYOFF_Q_FILES", "files")
 
-  consumer = Consumer(queue_host, queue_name)
+  try:
+    consumer = Consumer(queue_host, queue_name)
+    print('Successfully created consumer.')
+  except:
+    print('Failed to create consumer.')
+    exit(1)
 
-  w = Writer("site", consumer)
+  w = Writer(write_destination, consumer)
   w.start_consuming()
