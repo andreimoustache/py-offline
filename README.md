@@ -3,7 +3,8 @@
 ## Run
 
 ```
-docker-compose up -d
+docker-compose up -d \
+  --scale writer=2
 ```
 
 

@@ -1,13 +1,12 @@
 version: '3'
 services:
-  pyoff:
+  writer:
     build: .
+    entrypoint: ["python", "./pyoffline_writer.py"]
     depends_on:
       - q
     restart: on-failure
     environment:
-      PYOFF_URL: "https://google.com"
-      PYOFF_DEPTH: 1
       PYOFF_DESTINATION: "site/"
   q:
     image: rabbitmq:3.8-alpine
