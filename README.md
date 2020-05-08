@@ -4,7 +4,9 @@
 
 ```
 docker-compose up -d \
-  --scale writer=2
+  --scale writer=2 \
+  --abort-on-container-exit \
+  --exit-code-from pyoff_main
 ```
 
 
