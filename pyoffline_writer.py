@@ -1,4 +1,4 @@
-from pathlib import PurePath
+from pathlib import Path, PurePath
 from os import environ, makedirs
 from sys import exit
 from pyoffline_models import Resource
@@ -33,7 +33,7 @@ class Writer():
 
 
 if __name__ == "__main__":
-  write_destination = environ.get("PYOFF_DESTINATION", ".")
+  write_destination = environ.get("PYOFF_DESTINATION", "")
   queue_host = environ.get("PYOFF_Q_HOST", "q")
   queue_name = environ.get("PYOFF_Q_FILES", "files")
 
@@ -44,5 +44,6 @@ if __name__ == "__main__":
     print('Failed to create consumer.')
     exit(1)
 
+  write_destination = Path(f'./{write_destination}/')
   w = Writer(write_destination, consumer)
   w.start_consuming()
