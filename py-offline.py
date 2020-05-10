@@ -1,27 +1,21 @@
 from os import environ, makedirs
-from sys import version_info, exit
+from sys import version_info, exc_info, exit
 from urllib.parse import urlparse
 from pathlib import Path, PurePath
 from pickle import dumps
-from pyoffline_parser import detect_resources, process_document
 from pyoffline_downloader import download_resource
 from pyoffline_models import Document
 from q_publisher import Publisher
 
 
-def process_site(site_root, first_path, publisher: Publisher):
+def process_site(site_root, first_path, files_publisher: Publisher, resources_publisher: Publisher):
   first_document = Document(site_root+first_path, name=first_path, depth=0)
 
   documents = [first_document]
   resources = []
 
   downloaded_documents = [download_resource(document) for document in documents]
-  [process_document(site_root, document, resources) for document in downloaded_documents]
-
-  downloaded_resources = [download_resource(resource) for resource in resources]
-  
-  [publisher.publish("files", dumps(document)) for document in downloaded_documents]
-  [publisher.publish("files", dumps(resource)) for resource in downloaded_resources]
+  [resources_publisher.publish("resources", document.to_serialised()) for document in downloaded_documents]
 
 
 def main():
@@ -49,15 +43,17 @@ PYOFF_DESTINATION={write_destination}
 
   q_host = environ.get("PYOFF_Q_HOST", "q")
   files_queue_name = environ.get("PYOFF_Q_FILES", "files")
+  resources_queue_name = environ.get("PYOFF_Q_RESOURCES", "resources")
   try:
     files_publisher = Publisher(q_host, files_queue_name)
-    print('Successfully created publisher.')
+    resources_publisher = Publisher(q_host, resources_queue_name)
+    print('Successfully created publishers and subscribers.')
   except:
-    print('Failed to create publisher.')
+    print('Failed to create publisher or subscriber.', exc_info())
     exit(1)
 
   print('Processing site.')
-  process_site(site_root, first_path, files_publisher)
+  process_site(site_root, first_path, files_publisher, resources_publisher)
 
 
 if __name__ == "__main__":
