@@ -22,6 +22,18 @@ services:
       PYOFF_DESTINATION: "site/"
       PYOFF_Q_HOST: "q"
       PYOFF_Q_FILES: "files"
+  parser:
+    build: .
+    entrypoint: ["python", "./pyoffline_parser.py"]
+    depends_on:
+      - q
+    restart: on-failure
+    environment:
+      PYOFF_URL: "https://amoustache.net"
+      PYOFF_DESTINATION: "site/"
+      PYOFF_Q_HOST: "q"
+      PYOFF_Q_FILES: "files"
+      PYOFF_Q_RESOURCES: "resources"
   q:
     image: rabbitmq:3.8-alpine
     ports:
