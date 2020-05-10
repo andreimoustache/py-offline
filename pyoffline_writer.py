@@ -1,6 +1,6 @@
 from pathlib import Path, PurePath
 from os import environ, makedirs
-from sys import exit
+from sys import exc_info, exit
 from pyoffline_models import Resource
 from q_consumer import Consumer
 import pickle
@@ -19,7 +19,7 @@ class Writer():
 
 
   def callback(self, body):
-    resource = pickle.loads(body)
+    resource = Resource.from_serialised(body)
     print(" [x] Received %r" % resource.name)
     self.write_to_file(resource)
 
@@ -41,7 +41,7 @@ if __name__ == "__main__":
     consumer = Consumer(queue_host, queue_name)
     print('Successfully created consumer.')
   except:
-    print('Failed to create consumer.')
+    print('Failed to create consumer.', exc_info()[0])
     exit(1)
 
   write_destination = Path(f'./{write_destination}/')

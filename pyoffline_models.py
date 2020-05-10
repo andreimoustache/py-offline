@@ -1,4 +1,5 @@
 from dataclasses import dataclass
+from pickle import dumps, loads
 
 
 @dataclass
@@ -8,6 +9,13 @@ class Resource:
   mimeType: str = ''
   body: str = ''
   encoding: str = ''
+
+  def to_serialised(self):
+    return dumps(self)
+  
+  @staticmethod
+  def from_serialised(serialised):
+    return loads(serialised)
 
 @dataclass
 class Document(Resource):
