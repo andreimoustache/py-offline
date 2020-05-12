@@ -15,13 +15,14 @@ class Parser:
     self.site_root = site_root
     self.publisher = publisher
     self.consumer = consumer
+    self.consumer.set_message_handler(self.consumer_callback)
 
 
   def run(self):
     publisher_thread = Thread(target=self.publisher.run, daemon=False)
     publisher_thread.start()
-
-    self.consumer.run()
+    consumer_thread = Thread(target=self.consumer.run, daemon=False)
+    consumer_thread.start()
 
 
   def make_link_relative(self, tag, attribute):
@@ -62,6 +63,10 @@ class Parser:
 
   def consumer_callback(self, body):
     resource = Resource.from_serialised(body)
+    if type(resource) is not Resource:
+      print("Received message in a wrong format.")
+      return
+
     print(" [x] Received %r" % resource.name)
     self.parse_resource(resource)
 
@@ -91,7 +96,7 @@ if __name__ == '__main__':
     exit(1)
 
   try:
-    consumer = Consumer(queue_host, resources_queue_name)
+    consumer = Consumer(queue_host, queue_port, resources_queue_name)
     logger.info('Successfully created consumer.')
   except:
     logger.error('Failed to create consumer.', exc_info=True)
