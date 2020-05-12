@@ -1,3 +1,5 @@
+import logging
+from threading import Thread
 from os import environ
 from sys import exc_info, exit
 from bs4 import BeautifulSoup
@@ -15,9 +17,11 @@ class Parser:
     self.consumer = consumer
 
 
-  def start_consuming(self):
-    while True:
-      self.consumer.run()
+  def run(self):
+    publisher_thread = Thread(target=self.publisher.run, daemon=False)
+    publisher_thread.start()
+
+    self.consumer.run()
 
 
   def make_link_relative(self, tag, attribute):
@@ -63,30 +67,36 @@ class Parser:
 
 
 if __name__ == '__main__':
+  log_format = ('%(levelname) -10s %(asctime)s %(name) -30s %(funcName) '
+                  '-35s %(lineno) -5d: %(message)s')
+  logging.basicConfig(level=logging.INFO, format=log_format)
+  logger = logging.getLogger(__name__)
+
   site_url = environ.get("PYOFF_URL", None)
   depth = environ.get("PYOFF_DEPTH", 1)
   queue_host = environ.get("PYOFF_Q_HOST", "q")
+  queue_port = environ.get("PYOFF_Q_PORT", "5672")
   files_queue_name = environ.get("PYOFF_Q_FILES", "files")
   resources_queue_name = environ.get("PYOFF_Q_RESOURCES", "resources")
 
   scheme, domain, _, _, _, _ = urlparse(site_url)
   site_root = f'{scheme}://{domain}/'
-  print(f'Domain set to {domain}.')
+  logger.info(f'Domain set to {domain}.')
 
   try:
-    publisher = Publisher(queue_host, files_queue_name)
-    print('Successfully created publisher.')
+    publisher = Publisher(queue_host, queue_port, files_queue_name)
+    logger.info('Successfully created publisher.')
   except:
-    print('Failed to create publisher.', exc_info())
+    logger.error('Failed to create publisher.', exc_info=True)
     exit(1)
 
   try:
     consumer = Consumer(queue_host, resources_queue_name)
-    print('Successfully created consumer.')
+    logger.info('Successfully created consumer.')
   except:
-    print('Failed to create consumer.', exc_info())
+    logger.error('Failed to create consumer.', exc_info=True)
     exit(1)
 
 
   parser = Parser(site_root, publisher, consumer)
-  parser.start_consuming()
+  parser.run()
