@@ -42,11 +42,12 @@ PYOFF_DESTINATION={write_destination}
   print(f'Write path set to {write_path}.')
 
   q_host = environ.get("PYOFF_Q_HOST", "q")
+  q_port = environ.get("PYOFF_Q_PORT", "5672")
   files_queue_name = environ.get("PYOFF_Q_FILES", "files")
   resources_queue_name = environ.get("PYOFF_Q_RESOURCES", "resources")
   try:
-    files_publisher = Publisher(q_host, files_queue_name)
-    resources_publisher = Publisher(q_host, resources_queue_name)
+    files_publisher = Publisher(q_host, q_port, files_queue_name)
+    resources_publisher = Publisher(q_host, q_port, resources_queue_name)
     print('Successfully created publishers and subscribers.')
   except:
     print('Failed to create publisher or subscriber.', exc_info())

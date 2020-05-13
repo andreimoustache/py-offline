@@ -23,6 +23,9 @@ services:
     env_file: .env
   q:
     image: rabbitmq:3.8-alpine
+    volumes:
+      - ./config/rabbitmq.conf:/etc/rabbitmq/rabbitmq.conf
+      - ./config/definitions.json:/etc/rabbitmq/definitions.json
     ports:
       - "15672:15672"
       - "5672:5672"
