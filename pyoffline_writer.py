@@ -21,7 +21,12 @@ class Writer():
 
 
   def callback(self, body):
-    resource = Resource.from_serialised(body)
+    try:
+      resource = Resource.from_serialised(body)
+    except pickle.UnpicklingError:
+      print("Received message in a wrong format.")
+      return
+
     if type(resource) is not Resource:
       print("Received message in a wrong format.")
       return
@@ -58,4 +63,7 @@ if __name__ == "__main__":
 
   write_destination = Path(f'./{write_destination}/')
   w = Writer(write_destination, consumer)
-  w.run()
+  try:
+    w.run()
+  except:
+    logger.error("Error occured while running Writer.", exc_info=True)

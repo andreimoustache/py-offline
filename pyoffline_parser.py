@@ -104,4 +104,8 @@ if __name__ == '__main__':
 
 
   parser = Parser(site_root, publisher, consumer)
-  parser.run()
+  try:
+    parser.run()
+  except:
+    logger.error("Error occured while running Parser.", exc_info=True)
+    exit(1)

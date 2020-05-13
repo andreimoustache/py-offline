@@ -47,8 +47,8 @@ class Consumer():
 
 
   def on_connection_open_error(self, unused_connection, err):
-    self.logger.error('Connection open failed, retrying in 5s. %s', err)
-    self.connection.ioloop.call_later(5, self.connection.ioloop.stop)
+    self.logger.error('Connection open failed. %s', err)
+    raise
 
 
   def on_connection_closed(self, connection, reason):
@@ -79,10 +79,14 @@ class Consumer():
       raise
 
 
+  def on_cancelok(self, _):
+    self.channel.close()
+
+
   def stop(self):
     self.logger.info('Stopping QConsumer.')
     if self.channel is not None:
-      self.channel.close()
+      self.channel.basic_cancel(self.on_cancelok, self.consumer_tag)
     if self.connection is not None:
-      self.connection.close()
+      self.connection.ioloop.start()
 

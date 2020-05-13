@@ -41,8 +41,8 @@ class Publisher():
 
 
   def on_connection_open_error(self, unused_connection, err):
-    self.logger.error('Connection open failed, retrying in 5s. %s', err)
-    self.connection.ioloop.call_later(5, self.connection.ioloop.stop)
+    self.logger.error('Connection open failed. %s', err)
+    raise
 
 
   def on_connection_closed(self, connection, reason):
@@ -50,6 +50,7 @@ class Publisher():
 
 
   def publish(self, key, message):
+    self.logger.info("Publishing message")
     try:
       self.channel.basic_publish(
         body=message,
@@ -66,7 +67,7 @@ class Publisher():
     try:
       self.connection = self.connect()
       self.connection.ioloop.start()
-    except:
+    except KeyboardInterrupt:
       self.logger.error('Error occured running publisher.', exc_info=True)
       self.stop()
       if (self.connection is not None and not self.connection.is_closed):
