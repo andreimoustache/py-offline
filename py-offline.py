@@ -8,11 +8,10 @@ from pyoffline_downloader import download_resource
 from pyoffline_models import Document
 
 
-def process_site(site_root, first_path, write_path):
+def process_site(site_root, documents, resources, files, first_path, write_path):
   first_document = Document(site_root+first_path, name=first_path, depth=0)
 
-  documents = [first_document]
-  resources = []
+  documents.append(first_document)
 
   downloaded_documents = [download_resource(document) for document in documents]
   [process_document(site_root, document, resources) for document in downloaded_documents]
@@ -45,7 +44,8 @@ PYOFF_DESTINATION={write_destination}
   write_path = Path(f'./{write_destination}/')
   print(f'Write path set to {write_path}.')
 
-  process_site(site_root, first_path, write_path)
+  documents, resources, files = [], [], []
+  process_site(site_root, documents, resources, files, first_path, write_path)
 
 
 if __name__ == "__main__":
