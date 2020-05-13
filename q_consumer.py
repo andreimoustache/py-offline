@@ -8,6 +8,7 @@ class Consumer():
     self.url = f'amqp://guest:guest@{q_host}:{q_port}/'
     self.connection = None
     self.channel = None
+    self.consumer_tag = None
     self.publish_properties = BasicProperties(delivery_mode=2)
     self.message_handler = message_handler
 
@@ -32,7 +33,11 @@ class Consumer():
     self.channel = channel
     self.channel.add_on_close_callback(self.on_channel_closed)
     self.channel.queue_declare(queue=self.queue_name, durable=True)
-    self.channel.basic_qos(prefetch_count=1)
+    self.channel.basic_qos(prefetch_count=1, callback=self.on_basic_qos_ok)
+
+
+  def on_basic_qos_ok(self, _):
+    self.consumer_tag = self.channel.basic_consume(self.queue_name, self.on_message)
 
 
   def on_channel_closed(self, channel, reason):
