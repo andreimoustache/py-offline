@@ -25,9 +25,16 @@ def fork_processor(source: Queue, process: Callable, predicate: Callable, left_d
     item = source.get()
     processed_item = process(item)
 
-    if predicate(processed_item):
-      left_destination.put(processed_item)
+    if type(processed_item) is list:
+      for processed in processed_item:
+        if predicate(processed):
+          left_destination.put(processed)
+        else:
+          right_destination.put(processed)
     else:
-      right_destination.put(processed_item)
+      if predicate(processed_item):
+        left_destination.put(processed_item)
+      else:
+        right_destination.put(processed_item)
 
     source.task_done()

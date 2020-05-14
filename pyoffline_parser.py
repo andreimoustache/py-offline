@@ -18,7 +18,9 @@ class Parser:
     return Resource(url, name=relative_url)
 
 
-  def detect_resources(self, document, resources):
+  def detect_resources(self, document):
+    resources = []
+
     own_src_resources = document.find_all(has_href_with_url(self.site_root))
     self.logger.info(f'Found {len(own_src_resources)} href resources tags.')
     resources += [make_link_relative(resource, "href", self.site_root) for resource in own_src_resources]
@@ -27,13 +29,19 @@ class Parser:
     self.logger.info(f'Found {len(own_src_resources)} src resources tags.')
     resources += [make_link_relative(resource, "src", self.site_root) for resource in own_src_resources]
 
-
-  def process_document(self, document: Document, resources):
-    parsed_document = BeautifulSoup(document.body, "html.parser")
-    detect_resources(parsed_document, resources, self.site_root)
+    return resources
 
 
-  def parse(self, resource: Resource): pass
+  def parse(self, resource: Resource):
+    parsed_resource = BeautifulSoup(resource.body, "html.parser")
+    detected_resources = self.detect_resources(parsed_resource)
+
+    resource.body = str(parsed_resource)
+
+    return [resource] + detected_resources
 
 
-  def is_resource_writable(self, resource: Resource): pass
+  def is_resource_writable(self, resource: Resource):
+    has_body = resource.body is not None
+    needs_processing = resource.mimeType == "text/html"
+    return has_body and not needs_processing
