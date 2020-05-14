@@ -57,9 +57,10 @@ def main(logger: logging.Logger):
 
 
 if __name__ == "__main__":
+  log_level = environ.get("LOGLEVEL", "INFO")
   log_format = ('%(levelname) -10s %(asctime)s %(name) -30s %(funcName) '
                   '-35s [%(threadName)s] %(lineno) -5d: %(message)s')
-  logging.basicConfig(level=logging.INFO, format=log_format)
+  logging.basicConfig(level=log_level, format=log_format)
   logger = logging.getLogger(__name__)
 
   main(logger)
