@@ -1,32 +1,39 @@
-import re
+from logging import getLogger
 from bs4 import BeautifulSoup
 from pyoffline_models import Resource, Document
+from beautifulsoup_extensions import has_href_with_url, has_src_with_url
 
 
-def process_resource(tag, attribute, site_root):
-  url = tag[attribute]
-  relative_url = tag[attribute].replace(site_root, "")
-  tag[attribute] = relative_url
-
-  return Resource(url, name=relative_url)
+class Parser:
+  def __init__(self, site_root: str):
+    self.logger = getLogger()
+    self.site_root = site_root
 
 
-def detect_resources(document, resources, site_root):
-  own_src_resources = document.find_all(href=re.compile(f'^{site_root}'))
-  print(f'Found {len(own_src_resources)} href resources tags.')
-  resources += [process_resource(resource, "href", site_root) for resource in own_src_resources]
+  def make_link_relative(self, tag, attribute):
+    url = tag[attribute]
+    relative_url = tag[attribute].replace(self.site_root, "")
+    tag[attribute] = relative_url
 
-  own_src_resources = document.find_all(src=re.compile(f'^{site_root}'))
-  print(f'Found {len(own_src_resources)} src resources tags.')
-  resources += [process_resource(resource, "src", site_root) for resource in own_src_resources]
+    return Resource(url, name=relative_url)
 
 
-def process_document(site_root, document: Document, resources):
-  parsed_document = BeautifulSoup(document.body, "html.parser")
-  detect_resources(parsed_document, resources, site_root)
+  def detect_resources(self, document, resources):
+    own_src_resources = document.find_all(has_href_with_url(self.site_root))
+    self.logger.info(f'Found {len(own_src_resources)} href resources tags.')
+    resources += [make_link_relative(resource, "href", self.site_root) for resource in own_src_resources]
+
+    own_src_resources = document.find_all(has_src_with_url(self.site_root))
+    self.logger.info(f'Found {len(own_src_resources)} src resources tags.')
+    resources += [make_link_relative(resource, "src", self.site_root) for resource in own_src_resources]
 
 
-def parse(resource: Resource): pass
+  def process_document(self, document: Document, resources):
+    parsed_document = BeautifulSoup(document.body, "html.parser")
+    detect_resources(parsed_document, resources, self.site_root)
 
 
-def is_resource_writable(resource: Resource): pass
+  def parse(self, resource: Resource): pass
+
+
+  def is_resource_writable(self, resource: Resource): pass

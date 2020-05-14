@@ -3,22 +3,22 @@ from queue import Queue
 from sys import version_info, exit
 from threading import Thread
 import logging
+import requests
 from config import Config, ConfigException
-from pyoffline_writer import write
-from pyoffline_parser import parse, is_resource_writable
-from pyoffline_downloader import download
+from pyoffline_writer import Writer
+from pyoffline_parser import Parser
+from pyoffline_downloader import Downloader
 from pyoffline_models import Document, Resource
 from queue_processors import processor, fork_processor
 
 
-def process_site(site_root, urls, resources, files, first_path, write_path):
-  first_document = Document(site_root+first_path, name=first_path, depth=0)
-
+def process_site(config, urls, resources, files, downloader:Downloader, parser: Parser, writer: Writer):
+  first_document = Document(config.site_root+config.first_path, name=config.first_path, depth=0)
   urls.put(first_document)
 
-  download_processor_args = (urls, download, resources)
-  parse_processor_args = (resources, parse, is_resource_writable, files, urls)
-  write_processor_args = (files, write)
+  download_processor_args = (urls, downloader.download, resources)
+  parse_processor_args = (resources, parser.parse, parser.is_resource_writable, files, urls)
+  write_processor_args = (files, writer.write)
 
   Thread(target=processor, args=download_processor_args, daemon=True).start()
   Thread(target=fork_processor, args=parse_processor_args, daemon=True).start()
@@ -35,8 +35,12 @@ def main(logger: logging.Logger):
   logger.info("Starting py-offline")
   logger.info(config)
 
+  downloader = Downloader(requests)
+  parser = Parser(config.site_root)
+  writer = Writer(config.write_path)
+
   urls, resources, files = Queue(), Queue(), Queue()
-  process_site(config.site_root, urls, resources, files, config.first_path, config.write_path)
+  process_site(config, urls, resources, files, downloader, parser, writer)
 
 
 if __name__ == "__main__":
