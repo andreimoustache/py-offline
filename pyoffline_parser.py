@@ -10,31 +10,36 @@ class Parser:
     self.site_root = site_root
 
 
-  def make_link_relative(self, tag, attribute):
+  def make_link_relative(self, tag, attribute, current_depth=0):
     url = tag[attribute]
     relative_url = tag[attribute].replace(self.site_root, "")
     tag[attribute] = relative_url
 
-    return Resource(url, name=relative_url)
+    if tag.name == "a":
+      resource = Document(url, name=relative_url, depth=current_depth+1)
+    else:
+      resource = Resource(url, name=relative_url)
+
+    return resource
 
 
-  def detect_resources(self, document):
+  def detect_resources(self, document, current_depth):
     resources = []
 
-    own_src_resources = document.find_all(has_href_with_url(self.site_root))
-    self.logger.info(f'Found {len(own_src_resources)} href resources tags.')
-    resources += [make_link_relative(resource, "href", self.site_root) for resource in own_src_resources]
+    href_tags = document.find_all(has_href_with_url(self.site_root))
+    self.logger.info(f'Found {len(href_tags)} href resources tags.')
+    resources += [self.make_link_relative(tag, "href",current_depth) for tag in href_tags]
 
-    own_src_resources = document.find_all(has_src_with_url(self.site_root))
-    self.logger.info(f'Found {len(own_src_resources)} src resources tags.')
-    resources += [make_link_relative(resource, "src", self.site_root) for resource in own_src_resources]
+    src_tags = document.find_all(has_src_with_url(self.site_root))
+    self.logger.info(f'Found {len(src_tags)} src resources tags.')
+    resources += [self.make_link_relative(resource, "src", current_depth) for resource in src_tags]
 
     return resources
 
 
-  def parse(self, resource: Resource):
+  def parse(self, resource: Document):
     parsed_resource = BeautifulSoup(resource.body, "html.parser")
-    detected_resources = self.detect_resources(parsed_resource)
+    detected_resources = self.detect_resources(parsed_resource, resource.depth)
 
     resource.body = str(parsed_resource)
 
