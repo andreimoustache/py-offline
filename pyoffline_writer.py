@@ -16,5 +16,5 @@ class Writer:
     filename = PurePath(self.path / resource.name)
     self.logger.info(f'Writing file to {filename}.')
     makedirs(filename.parent, exist_ok=True)
-    with open(filename, 'w', encoding=resource.encoding) as file:
+    with open(filename, 'w', encoding="utf-8") as file:
       file.write(resource.body)
