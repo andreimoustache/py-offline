@@ -12,6 +12,7 @@ def processor(source: Queue, process: Callable, destination: Queue=None):
   while True:
     item = source.get()
     try:
+      logger.debug(f'Processing {item}.')
       processed_item = process(item)
     except:
       logger.error(f'Exception caught processing {item}.', exc_info=True)
@@ -19,7 +20,9 @@ def processor(source: Queue, process: Callable, destination: Queue=None):
     if destination is not None:
       destination.put(processed_item)
 
+    logger.debug(f'Done processing {item}.')
     source.task_done()
+  logger.info("Terminating processor.")
 
 
 def fork_processor(source: Queue, process: Callable, predicate: Callable, left_destination: Queue, right_destination: Queue):
@@ -31,6 +34,7 @@ def fork_processor(source: Queue, process: Callable, predicate: Callable, left_d
 
   while True:
     item = source.get()
+    logger.debug(f'Processing {item}.')
     try:
       processed_item = process(item)
     except:
@@ -48,4 +52,6 @@ def fork_processor(source: Queue, process: Callable, predicate: Callable, left_d
       else:
         right_destination.put(processed_item)
 
+    logger.debug(f'Done processing {item}.')
     source.task_done()
+  logger.info("Terminating processor.")
