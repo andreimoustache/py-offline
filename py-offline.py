@@ -12,17 +12,28 @@ from pyoffline_models import Document, Resource
 from queue_processors import processor, fork_processor
 
 
-def process_site(config, urls, resources, files, downloader:Downloader, parser: Parser, writer: Writer):
+def process_site(config:Config,
+                  urls: Queue,
+                  resources: Queue,
+                  files: Queue,
+                  downloader:Downloader,
+                  parser: Parser,
+                  writer: Writer):
+
   first_document = Document(config.site_root+config.first_path, name=config.first_path, depth=0)
   urls.put(first_document)
 
-  download_processor_args = (urls, downloader.download, resources)
-  parse_processor_args = (resources, parser.parse, parser.is_resource_writable, files, urls)
-  write_processor_args = (files, writer.write)
+  downloader_args = (urls, downloader.download, resources)
+  parser_args = (resources, parser.parse, parser.is_resource_writable, files, urls)
+  writer_args = (files, writer.write)
 
-  Thread(target=processor, args=download_processor_args, daemon=True).start()
-  Thread(target=fork_processor, args=parse_processor_args, daemon=True).start()
-  Thread(target=processor, args=write_processor_args, daemon=True).start()
+  Thread(name="downloader", target=processor, args=downloader_args, daemon=True).start()
+  Thread(name="parser", target=fork_processor, args=parser_args, daemon=True).start()
+  Thread(name="writer", target=processor, args=writer_args, daemon=True).start()
+
+  urls.join()
+  resources.join()
+  files.join()
 
 
 def main(logger: logging.Logger):
@@ -45,7 +56,7 @@ def main(logger: logging.Logger):
 
 if __name__ == "__main__":
   log_format = ('%(levelname) -10s %(asctime)s %(name) -30s %(funcName) '
-                  '-35s %(lineno) -5d: %(message)s')
+                  '-35s [%(threadName)s] %(lineno) -5d: %(message)s')
   logging.basicConfig(level=logging.INFO, format=log_format)
   logger = logging.getLogger(__name__)
 
