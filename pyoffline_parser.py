@@ -24,3 +24,9 @@ def detect_resources(document, resources, site_root):
 def process_document(site_root, document: Document, resources):
   parsed_document = BeautifulSoup(document.body, "html.parser")
   detect_resources(parsed_document, resources, site_root)
+
+
+def parse(resource: Resource): pass
+
+
+def is_resource_writable(resource: Resource): pass

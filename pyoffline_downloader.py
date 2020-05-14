@@ -2,7 +2,7 @@ import requests
 from pyoffline_models import Resource
 
 
-def download_resource(resource: Resource):
+def download(resource: Resource):
   print(f'Requesting {resource.url}.')
   response = requests.get(resource.url)
   print(f'Got HTTP {response.status_code}, {response.headers["Content-Type"]}.')

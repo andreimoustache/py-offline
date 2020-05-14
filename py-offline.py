@@ -3,10 +3,9 @@ from sys import version_info, exit
 from threading import Thread
 import logging
 from config import Config, ConfigException
-from pyoffline_writer import write_to_file
-from pyoffline_parser import detect_resources, process_document
-from pyoffline_downloader import download_resource
-from pyoffline_models import Document
+from pyoffline_writer import write
+from pyoffline_parser import parse, is_resource_writable
+from pyoffline_downloader import download
 
 
 def process_site(site_root, documents, resources, files, first_path, write_path):

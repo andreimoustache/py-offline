@@ -3,7 +3,7 @@ from os import makedirs
 from pyoffline_models import Resource
 
 
-def write_to_file(path, resource: Resource):
+def write(path, resource: Resource):
   filename = PurePath(path / resource.name)
   print(f'Writing file to {filename}.')
   makedirs(filename.parent, exist_ok=True)
