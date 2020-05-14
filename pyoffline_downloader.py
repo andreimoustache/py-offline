@@ -13,6 +13,7 @@ class Downloader:
     response = self.http_client.get(resource.url)
     self.logger.info(f'Got HTTP {response.status_code}, {response.headers["Content-Type"]}.')
 
+    resource.url = response.url
     resource.mimeType = response.headers["Content-Type"]
     resource.encoding = response.encoding
     resource.body = response.text
