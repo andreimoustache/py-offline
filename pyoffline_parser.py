@@ -9,6 +9,7 @@ class Parser:
   def __init__(self, site_root: str):
     self.logger = getLogger()
     self.site_root = site_root
+    self.visited = set()
 
 
   def process_link(self, tag, attribute, current_depth=0):
@@ -35,7 +36,7 @@ class Parser:
     self.logger.info(f'Found {len(src_tags)} src resources tags.')
     resources += [self.process_link(resource, "src", current_depth) for resource in src_tags]
 
-    return resources
+    return [r for r in resources if not self.is_visited(r)]
 
 
   def parse(self, resource: Document):
@@ -51,3 +52,7 @@ class Parser:
     has_body = resource.body is not None
     needs_processing = resource.mimeType == "text/html"
     return has_body and not needs_processing
+
+
+  def is_visited(self, resource: Resource):
+    return resource.url in self.visited
