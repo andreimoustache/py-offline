@@ -14,7 +14,6 @@ class Config:
 
     scheme, domain, path, _, _, _ = urlparse(self.site_url)
     self.domain = domain
-    self.first_path = "index.html" if path in ["/", ""] else path
     self.site_root = f'{scheme}://{domain}/'
 
     self.write_path = Path(f'./{self.write_destination}/')

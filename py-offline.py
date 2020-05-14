@@ -10,6 +10,7 @@ from pyoffline_parser import Parser
 from pyoffline_downloader import Downloader
 from pyoffline_models import Document, Resource
 from queue_processors import processor, fork_processor
+from url_extensions import make_url_relative
 
 
 def process_site(config:Config,
@@ -20,7 +21,8 @@ def process_site(config:Config,
                   parser: Parser,
                   writer: Writer):
 
-  first_document = Document(config.site_root+config.first_path, name=config.first_path, depth=0)
+  first_path = make_url_relative(config.site_url)
+  first_document = Document(config.site_url, name=first_path, depth=0)
   urls.put(first_document)
 
   downloader_args = (urls, downloader.download, resources)

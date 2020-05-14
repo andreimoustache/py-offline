@@ -24,4 +24,5 @@ def make_url_absolute(site_root, url):
 def make_url_relative(site_root, url):
   """Returns a relative url, from the base `site_root`
   """
-  return url.replace(site_root, "")
+  _, _, path, _, _, _ = urlparse(url)
+  return "/index.html" if path in ["/", ""] else path
