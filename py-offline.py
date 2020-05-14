@@ -21,7 +21,7 @@ def process_site(config:Config,
                   parser: Parser,
                   writer: Writer):
 
-  first_path = make_url_relative(config.site_url)
+  first_path = make_url_relative(config.site_root, config.site_url)
   first_document = Document(config.site_url, name=first_path, depth=0)
   urls.put(first_document)
 
