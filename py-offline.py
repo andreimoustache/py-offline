@@ -1,7 +1,8 @@
-from os import environ, makedirs
+from os import environ
 from sys import version_info, exit
-from urllib.parse import urlparse
-from pathlib import Path, PurePath
+from threading import Thread
+import logging
+from config import Config, ConfigException
 from pyoffline_writer import write_to_file
 from pyoffline_parser import detect_resources, process_document
 from pyoffline_downloader import download_resource
@@ -21,32 +22,24 @@ def process_site(site_root, documents, resources, files, first_path, write_path)
   [write_to_file(write_path, document) for document in downloaded_documents]
 
 
-def main():
-  site_url = environ.get("PYOFF_URL", None)
-  depth = environ.get("PYOFF_DEPTH", 1)
-  write_destination = environ.get("PYOFF_DESTINATION", ".")
-
-  print(f'''
-PYOFF_URL={site_url}
-PYOFF_DEPTH={depth}
-PYOFF_DESTINATION={write_destination}
-  ''')
-
-  if site_url is None:
-    print("I need a URL, please set the PYOFF_URL environment variable.")
+def main(logger: logging.Logger):
+  try:
+    config = Config(environ)
+  except ConfigException as ex:
+    logger.fatal(ex.args)
     return exit(1)
 
-  scheme, domain, path, _, _, _ = urlparse(site_url)
-  first_path = "index.html" if path in ["/", ""] else path
-  site_root = f'{scheme}://{domain}/'
-  print(f'Domain set to {domain}.')
-
-  write_path = Path(f'./{write_destination}/')
-  print(f'Write path set to {write_path}.')
+  logger.info("Starting py-offline")
+  logger.info(config)
 
   documents, resources, files = [], [], []
-  process_site(site_root, documents, resources, files, first_path, write_path)
+  process_site(config.site_root, documents, resources, files, config.first_path, config.write_path)
 
 
 if __name__ == "__main__":
-  main()
+  log_format = ('%(levelname) -10s %(asctime)s %(name) -30s %(funcName) '
+                  '-35s %(lineno) -5d: %(message)s')
+  logging.basicConfig(level=logging.INFO, format=log_format)
+  logger = logging.getLogger(__name__)
+
+  main(logger)
