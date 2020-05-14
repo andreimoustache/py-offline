@@ -5,9 +5,9 @@ from dataclasses import dataclass
 class Resource:
   url: str
   name: str = ''
-  mimeType: str = ''
-  body: str = ''
-  encoding: str = ''
+  mimeType: str = None
+  body: str = None
+  encoding: str = None
 
   def __str__(self):
     return f'{type(self).__name__}(name={self.name})'
