@@ -39,11 +39,13 @@ class Parser:
     return [r for r in resources if not self.is_visited(r)]
 
 
-  def parse(self, resource: Document):
-    parsed_resource = BeautifulSoup(resource.body, "html.parser")
-    detected_resources = self.detect_resources(parsed_resource, resource.depth)
+  def parse(self, resource: Resource):
+    detected_resources = []
 
-    resource.body = str(parsed_resource)
+    if type(resource) is Document:
+      parsed_resource = BeautifulSoup(resource.body, "html.parser")
+      detected_resources = self.detect_resources(parsed_resource, resource.depth)
+      resource.body = str(parsed_resource)
 
     return [resource] + detected_resources
 
