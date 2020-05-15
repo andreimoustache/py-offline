@@ -15,6 +15,7 @@ _Environment variables_
   * `PYOFF_DEPTH` - the depth of the crawl. Default is `0`, only the page's
   resources
   * `PYOFF_DESTINATION` - location where the site files are downloaded
+  * `LOGLEVEL` - defaults to `"INFO"`
 
 
 ## Components
@@ -49,3 +50,8 @@ Produces to `q_files`, with `file(name: str, content: str)`.
 `write(resource)` writes the resource to the filesystem.
 
 Subscribes to `q_files`.
+
+
+## Offline site
+
+http://localhost:8000

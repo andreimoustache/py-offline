@@ -3,9 +3,16 @@ services:
   pyoff:
     build: .
     environment:
-      PYOFF_URL: "https://amoustache.net"
-      PYOFF_DEPTH: 1
+      PYOFF_URL: "https://gohugo.io/"
+      PYOFF_DEPTH: 2
       PYOFF_DESTINATION: "site/"
       LOGLEVEL: "INFO"
     volumes:
       - "./site:/usr/src/app/site"
+
+  site:
+    image: nginx:stable-alpine
+    ports:
+    - "8000:80"
+    volumes:
+      - "./site:/usr/share/nginx/html:ro"
