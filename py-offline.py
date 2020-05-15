@@ -24,7 +24,7 @@ def main():
   logger.info(config)
 
   downloader = Downloader(requests)
-  parser = Parser(config.site_root)
+  parser = Parser(config.site_root, config.depth)
   writer = Writer(config.write_path)
 
   urls, resources, files = Queue(), Queue(), Queue()

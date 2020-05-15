@@ -6,9 +6,10 @@ from url_extensions import make_url_absolute, make_url_relative
 
 
 class Parser:
-  def __init__(self, site_root: str):
+  def __init__(self, site_root: str, max_depth: str=None):
     self.logger = getLogger()
     self.site_root = site_root
+    self.max_depth = max_depth
     self.visited = set()
 
 
@@ -36,7 +37,7 @@ class Parser:
     self.logger.info(f'Found {len(src_tags)} src resources tags.')
     resources += [self.process_link(resource, "src", current_depth) for resource in src_tags]
 
-    return [r for r in resources if not self.is_visited(r)]
+    return [r for r in resources if self.must_visit(r)]
 
 
   def parse(self, resource: Resource):
@@ -59,3 +60,14 @@ class Parser:
 
   def is_visited(self, resource: Resource):
     return resource.url in self.visited
+
+
+  def must_visit(self, resource: Resource):
+    if self.max_depth is None:
+      return not self.is_visited(resource)
+
+    can_go_deeper = True
+    if type(resource) is Document:
+      can_go_deeper = resource.depth < self.max_depth
+
+    return can_go_deeper and not self.is_visited(resource)

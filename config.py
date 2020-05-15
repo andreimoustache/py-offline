@@ -9,7 +9,7 @@ class ConfigException(Exception):
 class Config:
   def __init__(self, cfg: dict):
     self.site_url = cfg.get("PYOFF_URL", None)
-    self.depth = cfg.get("PYOFF_DEPTH", 1)
+    self.depth = int(cfg.get("PYOFF_DEPTH", 1))
     self.write_destination = cfg.get("PYOFF_DESTINATION", ".")
 
     scheme, domain, path, _, _, _ = urlparse(self.site_url)
