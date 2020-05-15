@@ -18,6 +18,22 @@ docker-compose up -d \
   * `PYOFF_DESTINATION` - location where the site files are downloaded
 
 
+## Overview
+
+There are three main components: the `downloader`, the `parser`, and
+the `writer`, each described further down. Each of these has its own service
+(in `docker-compose` lingo), which can then be scaled out separately, e.g.
+two `downloader` instances, three `parser`s, and one `writer`.
+
+These services are *stateless*, and to achieve that, there is a message broker
+between them, the `q` service here (RabbitMQ). They only process what they find
+in the queues, and then pass it further down the line. The only state they hold
+are their running configurations, e.g. which site they are downloading.
+
+The services are also as *dumb* as possible, leaveraging the running host's
+scheduling capavilities. Leaving out reconnecting logic makes for (subjectively)
+cleaner and (objectively) less code.
+
 ## Components
 
 ### Downloader
