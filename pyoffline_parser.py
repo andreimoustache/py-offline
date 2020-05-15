@@ -40,6 +40,7 @@ class Parser:
 
 
   def parse(self, resource: Resource):
+    self.visited.add(resource.url)
     detected_resources = []
 
     if type(resource) is Document:
