@@ -1,26 +1,73 @@
-import re
+from logging import getLogger
 from bs4 import BeautifulSoup
 from pyoffline_models import Resource, Document
+from beautifulsoup_extensions import has_href_with_url, has_src_with_url
+from url_extensions import make_url_absolute, make_url_relative
 
 
-def process_resource(tag, attribute, site_root):
-  url = tag[attribute]
-  relative_url = tag[attribute].replace(site_root, "")
-  tag[attribute] = relative_url
-
-  return Resource(url, name=relative_url)
-
-
-def detect_resources(document, resources, site_root):
-  own_src_resources = document.find_all(href=re.compile(f'^{site_root}'))
-  print(f'Found {len(own_src_resources)} href resources tags.')
-  resources += [process_resource(resource, "href", site_root) for resource in own_src_resources]
-
-  own_src_resources = document.find_all(src=re.compile(f'^{site_root}'))
-  print(f'Found {len(own_src_resources)} src resources tags.')
-  resources += [process_resource(resource, "src", site_root) for resource in own_src_resources]
+class Parser:
+  def __init__(self, site_root: str, max_depth: str=None):
+    self.logger = getLogger()
+    self.site_root = site_root
+    self.max_depth = max_depth
+    self.visited = set()
 
 
-def process_document(site_root, document: Document, resources):
-  parsed_document = BeautifulSoup(document.body, "html.parser")
-  detect_resources(parsed_document, resources, site_root)
+  def process_link(self, tag, attribute, current_depth=0):
+    absolute_url = make_url_absolute(self.site_root, tag[attribute])
+    relative_url = make_url_relative(self.site_root, tag[attribute])
+    tag[attribute] = relative_url
+
+    if tag.name == "a":
+      resource = Document(absolute_url, name=relative_url, depth=current_depth+1)
+    else:
+      resource = Resource(absolute_url, name=relative_url)
+
+    return resource
+
+
+  def detect_resources(self, document, current_depth):
+    resources = []
+
+    href_tags = document.find_all(has_href_with_url(self.site_root))
+    self.logger.info(f'Found {len(href_tags)} href resources tags.')
+    resources += [self.process_link(tag, "href",current_depth) for tag in href_tags]
+
+    src_tags = document.find_all(has_src_with_url(self.site_root))
+    self.logger.info(f'Found {len(src_tags)} src resources tags.')
+    resources += [self.process_link(resource, "src", current_depth) for resource in src_tags]
+
+    return [r for r in resources if self.must_visit(r)]
+
+
+  def parse(self, resource: Resource):
+    self.visited.add(resource.url)
+    detected_resources = []
+
+    if type(resource) is Document:
+      parsed_resource = BeautifulSoup(resource.body, "html.parser")
+      detected_resources = self.detect_resources(parsed_resource, resource.depth)
+      resource.body = str(parsed_resource)
+
+    return [resource] + detected_resources
+
+
+  def is_resource_writable(self, resource: Resource):
+    has_body = resource.body is not None
+    needs_processing = resource.mimeType == "text/html"
+    return has_body and not needs_processing
+
+
+  def is_visited(self, resource: Resource):
+    return resource.url in self.visited
+
+
+  def must_visit(self, resource: Resource):
+    if self.max_depth is None:
+      return not self.is_visited(resource)
+
+    can_go_deeper = True
+    if type(resource) is Document:
+      can_go_deeper = resource.depth < self.max_depth
+
+    return can_go_deeper and not self.is_visited(resource)

@@ -3,6 +3,9 @@ services:
   pyoff:
     build: .
     environment:
-      PYOFF_URL: "https://google.com"
+      PYOFF_URL: "https://amoustache.net"
       PYOFF_DEPTH: 1
       PYOFF_DESTINATION: "site/"
+      LOGLEVEL: "INFO"
+    volumes:
+      - "./site:/usr/src/app/site"
