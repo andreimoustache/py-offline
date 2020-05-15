@@ -20,6 +20,8 @@ _Environment variables_
 
 ## Components
 
+![](diagram.png)
+
 ### Downloader
 
 `download(url)` downloads resources (`HTML`, stylesheets, media, etc.) and
